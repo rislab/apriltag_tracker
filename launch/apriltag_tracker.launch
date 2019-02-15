@@ -1,0 +1,7 @@
+<launch>
+    <node pkg="apriltag_tracker" type="apriltag_tracker_node" name="apriltag_tracker" output="screen">
+      <param name="params_file" value="$(find pose_graph_fusion)/config/areneae01_params.yaml"/>
+      <remap from="/apriltag_tracker/image_topic" to="/mv_25000828_camera/mv_25000828/image_rect"/>
+    </node>
+
+</launch>

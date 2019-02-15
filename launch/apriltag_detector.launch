@@ -1,0 +1,9 @@
+<launch>
+	<arg name="params_file"/>
+	<arg name="image_topic" default="/mv_25000828_camera/mv_25000828/image_rect"/>
+    <node pkg="apriltag_tracker" type="apriltag_detector_node" name="apriltag_detector" output="screen">
+      <param name="params_file" value="$(arg params_file)"/>
+      <remap from="/apriltag_detector/image_topic" to="$(arg image_topic)"/>
+    </node>
+
+</launch>
