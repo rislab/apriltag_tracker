@@ -159,9 +159,9 @@ bool AprilTagTracker::TrackTag(const cv::Mat &curr_img,
                                 tvec);
         cv::Mat R_cv;
         cv::Rodrigues(rvec, R_cv);
-        Eigen::Map<Eigen::Matrix3f> R(reinterpret_cast<float *>(R_cv.data),
+        Eigen::Map<Eigen::MatrixXd> R(reinterpret_cast<double *>(R_cv.data),
                                       R_cv.rows, R_cv.cols);
-        Eigen::Map<Eigen::Vector3f> t(reinterpret_cast<float *>(tvec.data), 3);
+        Eigen::Map<Eigen::VectorXd> t(reinterpret_cast<double *>(tvec.data), 3);
         theta.template block<3, 3>(0, 0) = R.cast<typename T::Scalar>();
         theta.template block<3, 1>(0, 3) = t.cast<typename T::Scalar>();
         return true;
