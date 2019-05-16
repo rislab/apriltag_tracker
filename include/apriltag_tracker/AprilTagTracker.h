@@ -117,6 +117,10 @@ class AprilTagTracker {
                  std::vector<std::pair<Eigen::Matrix4f, uint>> &detections,
                  cv::Mat &debug_img);
 
+  bool DetectTag(const cv::Mat &curr_img,
+                  std::vector<cv::Point2f> &detected_points,
+                  cv::Mat &debug_img);
+
   bool DetectTags(const cv::Mat &curr_img,
                   std::map<uint, std::vector<cv::Point2f>> &detected_points,
                   cv::Mat &debug_img);

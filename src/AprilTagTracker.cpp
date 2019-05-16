@@ -73,3 +73,49 @@ bool AprilTagTracker::DetectTags(
   }
   return true;
 }
+
+bool AprilTagTracker::DetectTag(const cv::Mat &curr_img,
+                                std::vector<cv::Point2f> &detected_points,
+                                cv::Mat &debug_img) {
+  detected_points.clear();
+
+  std::vector<AprilTags::TagDetection> detections =
+      tag_detector_.extractTags(curr_img);
+  if (detections.empty()) {
+    return false;
+  }
+  if (params_.do_debug) {
+    cv::cvtColor(curr_img, debug_img, CV_GRAY2RGB);
+  }
+  for (AprilTags::TagDetection &detection : detections) {
+    if (detection.id == params_.id) {
+      std::vector<cv::Point2f> points;
+      points.push_back(
+          cv::Point2f(detection.p[0].first, detection.p[0].second));
+      points.push_back(
+          cv::Point2f(detection.p[1].first, detection.p[1].second));
+      points.push_back(
+          cv::Point2f(detection.p[2].first, detection.p[2].second));
+      points.push_back(
+          cv::Point2f(detection.p[3].first, detection.p[3].second));
+
+      if (detection.good) {
+        detected_points = points;
+      }
+
+      // Check if any of the points are beyond the dimensions of the image!
+      cv::Rect rect(cv::Point(), curr_img.size());
+      for (const auto &point : points) {
+        if (!rect.contains(point)) {
+          return false;
+        }
+      }
+
+      if (params_.do_debug) {
+        detection.draw(debug_img);
+      }
+      return true;
+    }
+  }
+  return false;
+}

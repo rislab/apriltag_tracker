@@ -92,16 +92,45 @@ class AprilTagTrackerPythonWrapper {
     }
     return false;
   }
+
+  boost::python::list PythonDetectTagDebug(PyObject *curr_img_py,
+                                           PyObject *debug_img_py) {
+    auto curr_obj = reinterpret_cast<PyArrayObject *>(curr_img_py);
+    int ndims = PyArray_NDIM(curr_obj);
+    if (ndims != 2) {
+      throw std::runtime_error("expecting a 2D array but got " +
+                               std::to_string(ndims));
+    }
+    auto size_ptr = PyArray_DIMS(curr_obj);
+    auto rows = size_ptr[0], cols = size_ptr[1];
+
+    auto curr_ptr =
+        PyArray_DATA(reinterpret_cast<PyArrayObject *>(curr_img_py));
+    cv::Mat curr(cv::Size(cols, rows), CV_8UC1, static_cast<uchar *>(curr_ptr));
+
+    std::vector<cv::Point2f> detections;
+
+    auto debug_ptr =
+        PyArray_DATA(reinterpret_cast<PyArrayObject *>(debug_img_py));
+    cv::Mat debug_img(cv::Size(cols, rows), CV_8UC3,
+                      static_cast<uchar *>(debug_ptr));
+
+    boost::python::list list;
+    if (tracker_->DetectTag(curr, detections, debug_img)) {
+      // Copy over the detections to the pyobject
+      for (auto &pixel : detections) {
+        list.append(pixel.x);
+        list.append(pixel.y);
+      }
+    }
+    return list;
+  }
 };
 
 using namespace boost::python;
 BOOST_PYTHON_MODULE(_AprilTagTracker) {
-  class_<
-      AprilTagTrackerPythonWrapper>(
-      "AprilTagTracker", init<std::string>())
-      .def(
-          "track",
-          &AprilTagTrackerPythonWrapper::PythonTrack)
-      .def("track_debug",
-           &AprilTagTrackerPythonWrapper::PythonTrackDebug);
+  class_<AprilTagTrackerPythonWrapper>("AprilTagTracker", init<std::string>())
+      .def("track", &AprilTagTrackerPythonWrapper::PythonTrack)
+      .def("track_debug", &AprilTagTrackerPythonWrapper::PythonTrackDebug)
+      .def("detect_tag", &AprilTagTrackerPythonWrapper::PythonDetectTagDebug);
 }
